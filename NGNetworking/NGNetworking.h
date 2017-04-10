@@ -10,5 +10,6 @@
 #define NGNetworking_h
 
 #import "NGNetworkManager.h"
+#import "NGBaseRequest.h"
 
 #endif 

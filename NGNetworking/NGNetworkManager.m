@@ -7,6 +7,7 @@
 //
 
 #import "NGNetworkManager.h"
+#import "NGBaseRequest.h"
 #import <AFNetworking/AFNetworking.h>
 #import <YYModel/YYModel.h>
 
@@ -20,21 +21,25 @@
 
 /** 网络请求库 */
 @property (nonatomic,assign) NGNetwokLib networkLib;
-
 /** HTTP请求方法 */
 @property (nonatomic,assign) NGHTTPMethod httpMethod;
 /** 请求URL串 */
 @property (nonatomic,copy) NSString *urlString;
+/** 是否打印log */
+@property (nonatomic,assign) BOOL isLog;
+
+
+/** 请求参数类型 */
+@property (nonatomic,assign) NGRequestType requestType;
+/** 请求参数 ( NGRequestTypeModel ) */
+@property (nonatomic,strong) NGBaseRequest *request;
 /** 请求参数 */
 @property (nonatomic,strong) id parameters;
 
 /** 请求成功返回类型 */
 @property (nonatomic,assign) NGResponseType responseType;
-/** 模型的Class */
-@property (nonatomic,strong) Class modelClass;
-
-/** 是否打印log */
-@property (nonatomic,assign) BOOL isLog;
+/** 响应Model的Class */
+@property (nonatomic,strong) Class responseClass;
 
 
 /** 成功block */
@@ -83,6 +88,27 @@
         return self;
     };
 }
+- (NGNetworkManager *(^)(BOOL))ng_isLog {
+    return ^ NGNetworkManager * (BOOL isLog) {
+        self.isLog = isLog;
+        return self;
+    };
+}
+
+- (NGNetworkManager *(^)(NGRequestType))ng_requestType {
+    return ^ NGNetworkManager * (NGRequestType requestType) {
+        self.requestType = requestType;
+        return self;
+    };
+}
+- (NGNetworkManager *(^)(NGBaseRequest *))ng_request {
+    return ^ NGNetworkManager * (NGBaseRequest *request) {
+        self.request    = request;
+        // 设置参数
+        self.parameters = request.ng_parameters;
+        return self;
+    };
+}
 - (NGNetworkManager *(^)(id))ng_parameters {
     return ^ NGNetworkManager * (id parameters) {
         self.parameters = parameters;
@@ -96,20 +122,12 @@
         return self;
     };
 }
-- (NGNetworkManager *(^)(__unsafe_unretained Class))ng_modelClass {
-    return ^ NGNetworkManager * (Class modelClass) {
-        self.modelClass = modelClass;
+- (NGNetworkManager *(^)(__unsafe_unretained Class))ng_responseClass {
+    return ^ NGNetworkManager * (Class responseClass) {
+        self.responseClass = responseClass;
         return self;
     };
 }
-
-- (NGNetworkManager *(^)(BOOL))ng_isLog {
-    return ^ NGNetworkManager * (BOOL isLog) {
-        self.isLog = isLog;
-        return self;
-    };
-}
-
 
 - (NGNetworkManager *(^)(NGSuccessHandler))ng_successHandler {
     return ^ NGNetworkManager * (NGSuccessHandler successHandler) {
@@ -229,8 +247,15 @@
     switch (self.responseType) {
         case NGResponseTypeData:        response = responseObject; break;
         case NGResponseTypeJSON:        response = responseJSON;   break;
-        case NGResponseTypeModel:       response = [self.modelClass yy_modelWithJSON:responseJSON]; break;
-        case NGResponseTypeModelArray:  response = [NSArray yy_modelArrayWithClass:self.modelClass json:responseJSON]; break;
+        case NGResponseTypeModel:
+        {
+            if ([responseJSON isKindOfClass:[NSArray class]]) { // 是JSON数组
+                response = [NSArray yy_modelArrayWithClass:self.responseClass json:responseJSON];
+            } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
+                response = [self.responseClass yy_modelWithJSON:responseJSON];
+            }
+        }
+            break;
     }
     
     if (self.successHandler) {
