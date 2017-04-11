@@ -14,13 +14,13 @@
     return [[self alloc] init];
 }
 
-- (NGResponse *(^)(NGResponseType))ng_responseType {
+- (NGResponse * (^)(NGResponseType))ng_responseType {
     return ^ NGResponse * (NGResponseType responseType) {
         _responseType = responseType;
         return self;
     };
 }
-- (NGResponse *(^)(__unsafe_unretained Class))ng_responseClass {
+- (NGResponse * (^)(__unsafe_unretained Class))ng_responseClass {
     return ^(Class responseClass) {
         _responseClass = responseClass;
         return self;

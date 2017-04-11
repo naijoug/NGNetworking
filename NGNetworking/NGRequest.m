@@ -18,19 +18,19 @@
     return [[self alloc] init];
 }
 
-- (NGRequest *(^)(NGRequestType))ng_requestType {
-    return ^(NGRequestType requestType) {
-        _requestType = requestType;
-        return self;
-    };
-}
-- (NGRequest *(^)(NSString *))ng_urlPathString {
+- (NGRequest * (^)(NSString *))ng_urlPathString {
     return ^(NSString *urlPathString) {
         _urlPathString = urlPathString;
         return self;
     };
 }
-- (NGRequest *(^)(id))ng_parameters {
+- (NGRequest * (^)(NGRequestType))ng_requestType {
+    return ^(NGRequestType requestType) {
+        _requestType = requestType;
+        return self;
+    };
+}
+- (NGRequest * (^)(id))ng_parameters {
     return ^(id parameters) {
         _parameters = parameters;
         return self;
@@ -39,9 +39,6 @@
 
 #pragma mark - NGModel
 
-+ (NSDictionary<NSString *,id> *)modelCustomPropertyMapper {
-    return nil;
-}
 + (NSArray<NSString *> *)modelPropertyBlacklist {
     return @[@"requestType",
              @"urlPathString",

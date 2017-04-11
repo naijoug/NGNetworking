@@ -16,7 +16,7 @@ typedef void (^NGFailureHandler)(NSError *error);
 @class NGResponse;
 @interface NGNetworkManager : NSObject
 
-+ (instancetype)shareManager;
++ (instancetype)ng_shareManager;
 
 /** 设置HTTP配置 */
 - (NGNetworkManager * (^)(NGConfig *config))ng_config;

@@ -13,11 +13,19 @@
 #pragma mark - Model
 
 @interface BookRequest : NGRequest
+
 @property (nonatomic,copy) NSString *q;
+@property (nonatomic,strong) NSNumber *count;
+@property (nonatomic,strong) NSNumber *start;
+
 @end
 
 @implementation BookRequest
-- (NSString *)q { return @"iOS"; }
+
+- (NSString *)urlPathString {
+    return @"/v2/book/search";
+}
+
 @end
 
 @interface BookInfo : NSObject
@@ -58,15 +66,15 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
+    NGConfig *config     = [NGConfig ng_config].ng_baseUrlString(@"https://api.douban.com");//.ng_isLog(NO);
     
-    NGConfig *config = [NGConfig ng_config].ng_baseUrlString(@"https://api.douban.com")
-                                           .ng_isLog(YES)
-                                           .ng_httpMethod(NGHTTPMethodPost);
-    
-    NGRequest *request = [BookRequest ng_request].ng_urlPathString(@"/v2/book/search").ng_requestType(NGRequestTypeModel);
+    BookRequest *request = [BookRequest ng_request];
+    request.q       = @"iOS";
+    request.start   = @1;
+    request.count   = @3;
     NGResponse *response = [NGResponse ng_response].ng_responseType(NGResponseTypeModel).ng_responseClass([BookList class]);
     
-    [[NGNetworkManager shareManager]
+    [[NGNetworkManager ng_shareManager]
      .ng_config(config)
      .ng_request(request)
      .ng_response(response)

@@ -8,10 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
-/** HTTP成功返回数据类型 */
+/** HTTP成功响应数据类型 */
 typedef NS_ENUM(NSInteger, NGResponseType) {
+    NGResponseTypeString,       // String
     NGResponseTypeData,         // 二进制 (NSData)
-    NGResponseTypeJSON,         // JSON字典 (NSDictionary)
+    NGResponseTypeJSON,         // JSON (NSDictionary || NSArray)
     NGResponseTypeModel,        // Model (需要设置Model Class)
 };
 
@@ -19,12 +20,12 @@ typedef NS_ENUM(NSInteger, NGResponseType) {
 
 + (instancetype)ng_response;
 
-/** 响应数据类型 */
+/** 响应数据类型 ( 默认 : NGResponseTypeString ) */
 @property (nonatomic,assign,readonly) NGResponseType responseType;
-/** response Model class ( == NGResponseTypeModel ) */
+/** 响应数据 Model class ( responseType == NGResponseTypeModel , 需要设置 ) */
 @property (nonatomic,strong,readonly) Class responseClass;
 
-- (NGResponse * (^)(NGResponseType responseType))ng_responseType;
-- (NGResponse * (^)(Class responseClasss))ng_responseClass;
+- (NGResponse * (^)(NGResponseType responseType))ng_responseType;   // 设置 responseType
+- (NGResponse * (^)(Class responseClasss))ng_responseClass;         // 设置 responseClass
 
 @end

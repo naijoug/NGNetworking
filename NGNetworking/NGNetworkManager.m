@@ -51,7 +51,7 @@
     return _taskCache;
 }
 
-+ (instancetype)shareManager {
++ (instancetype)ng_shareManager {
     static NGNetworkManager *_manager = nil;
     static dispatch_once_t once_token;
     dispatch_once(&once_token, ^{
@@ -62,32 +62,32 @@
 
 #pragma mark - 
 
-- (NGNetworkManager *(^)(NGConfig *))ng_config {
+- (NGNetworkManager * (^)(NGConfig *))ng_config {
     return ^(NGConfig *config) {
         _config = config;
         return self;
     };
 }
-- (NGNetworkManager *(^)(NGRequest *))ng_request {
+- (NGNetworkManager * (^)(NGRequest *))ng_request {
     return ^(NGRequest *request) {
         _request = request;
         return self;
     };
 }
-- (NGNetworkManager *(^)(NGResponse *))ng_response {
+- (NGNetworkManager * (^)(NGResponse *))ng_response {
     return ^(NGResponse *response) {
         _response = response;
         return self;
     };
 }
 
-- (NGNetworkManager *(^)(NGSuccessHandler))ng_successHandler {
+- (NGNetworkManager * (^)(NGSuccessHandler))ng_successHandler {
     return ^ NGNetworkManager * (NGSuccessHandler successHandler) {
         _successHandler = successHandler;
         return self;
     };
 }
-- (NGNetworkManager *(^)(NGFailureHandler))ng_failureHandler {
+- (NGNetworkManager * (^)(NGFailureHandler))ng_failureHandler {
     return ^ NGNetworkManager * (NGFailureHandler failureHandler) {
         _failureHandler = failureHandler;
         return self;
@@ -98,6 +98,10 @@
 
 - (NSUInteger)ng_start {
     
+    if (!self.config) { [self _logWithTitle:@"参数设置错误" message:@"未设置 config "]; return 0; }
+    if (!self.request) { [self _logWithTitle:@"参数设置错误" message:@"未设置 request "]; return 0; }
+    if (!self.response) { [self _logWithTitle:@"参数设置错误" message:@"未设置 response "]; return 0; }
+    
     [self _logRequest];
     
     NSURLSessionTask *task = nil;
@@ -106,7 +110,7 @@
         case NSNetworkLibNSURLSession: task = [self _startWithNSURLSession]; break;
     }
     
-    // 添加任务到字典
+    // 添加任务缓存中
     NSUInteger taskIndentifier = task.taskIdentifier;
     [self.taskCache setObject:task forKey:@(taskIndentifier)];
     
@@ -116,7 +120,7 @@
 - (void)ng_cancelWithTaskIdentifier:(NSUInteger)taskIdentifier {
     
     NSURLSessionTask *task = [self.taskCache objectForKey:@(taskIdentifier)];
-    if (task) { // 取消任务，并从字典中移除
+    if (task) { // 取消任务，并从缓存中移除
         [task cancel];
         [self.taskCache removeObjectForKey:@(taskIdentifier)];
     }
@@ -197,30 +201,37 @@
 #pragma mark Handler
 /** 处理成功返回 */
 - (void)_handlerSuccessWithTask:(NSURLSessionDataTask *)task responseObject:(id)responseObject {
-    NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *)task.response;
+    [self _logResponse:responseObject];
+    
+    // data -> String
+    NSString *responseString        = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+    // data -> JSON
     NSError *error;
     id responseJSON     = [NSJSONSerialization JSONObjectWithData:responseObject options:kNilOptions error:&error];
     [self _logWithTitle:@"JSON解析错误" error:error];
-    [self _logResponse:responseObject];
     
     // 成功响应数据
-    id response         = nil;
+    id response         = responseString;
     switch (self.response.responseType) {
+        case NGResponseTypeString:      response = responseString; break;
         case NGResponseTypeData:        response = responseObject; break;
         case NGResponseTypeJSON:        response = responseJSON;   break;
-        case NGResponseTypeModel:
+        case NGResponseTypeModel: // response 解析成 Model
         {
-            if ([responseJSON isKindOfClass:[NSArray class]]) { // 是JSON数组
-                response = [NSArray yy_modelArrayWithClass:self.response.responseClass json:responseJSON];
-            } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
-                response = [self.response.responseClass yy_modelWithJSON:responseJSON];
-            } else { // Model解析错误
-                response = responseObject;
+            if (self.response.responseClass) {
+                if ([responseJSON isKindOfClass:[NSArray class]]) { // 是JSON数组
+                    response = [NSArray yy_modelArrayWithClass:self.response.responseClass json:responseJSON];
+                } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
+                    response = [self.response.responseClass yy_modelWithJSON:responseJSON];
+                }
+            } else {
+                [self _logWithTitle:@"Model解析错误" message:@"未设置 responseClass 类型"];
             }
         }
             break;
     }
     
+    NSHTTPURLResponse *urlResponse  = (NSHTTPURLResponse *)task.response;
     if (self.successHandler) {
         self.successHandler(urlResponse.statusCode, response);
     }
