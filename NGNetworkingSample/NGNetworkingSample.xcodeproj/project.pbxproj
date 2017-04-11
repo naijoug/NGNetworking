@@ -8,7 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		9B6C8CA0485B580619797189 /* Pods_NGNetworkingSample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7EA851335C1E84CC42D993A /* Pods_NGNetworkingSample.framework */; };
-		FB1A7BB71E9B1CCC00B049E0 /* NGBaseRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7BB61E9B1CCC00B049E0 /* NGBaseRequest.m */; };
+		FB1A7C2D1E9B640F00B049E0 /* NGRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7C2C1E9B640F00B049E0 /* NGRequest.m */; };
+		FB1A7C301E9B7A4300B049E0 /* NGResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7C2F1E9B7A4300B049E0 /* NGResponse.m */; };
+		FB1A7C331E9B8CAC00B049E0 /* NGConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7C321E9B8CAC00B049E0 /* NGConfig.m */; };
 		FB7D76171E7AB6C600210283 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB7D76161E7AB6C600210283 /* main.m */; };
 		FB7D761A1E7AB6C600210283 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB7D76191E7AB6C600210283 /* AppDelegate.m */; };
 		FB7D761D1E7AB6C600210283 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB7D761C1E7AB6C600210283 /* ViewController.m */; };
@@ -22,8 +24,13 @@
 		0E4AAB4B99BD2B8AD57A274A /* Pods-NGNetworkingSample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NGNetworkingSample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NGNetworkingSample/Pods-NGNetworkingSample.debug.xcconfig"; sourceTree = "<group>"; };
 		211B7D984C3B73290FD94631 /* Pods-NGNetworkingSample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NGNetworkingSample.release.xcconfig"; path = "Pods/Target Support Files/Pods-NGNetworkingSample/Pods-NGNetworkingSample.release.xcconfig"; sourceTree = "<group>"; };
 		B7EA851335C1E84CC42D993A /* Pods_NGNetworkingSample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NGNetworkingSample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB1A7BB51E9B1CCC00B049E0 /* NGBaseRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NGBaseRequest.h; sourceTree = "<group>"; };
-		FB1A7BB61E9B1CCC00B049E0 /* NGBaseRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NGBaseRequest.m; sourceTree = "<group>"; };
+		FB1A7C2B1E9B640F00B049E0 /* NGRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NGRequest.h; sourceTree = "<group>"; };
+		FB1A7C2C1E9B640F00B049E0 /* NGRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NGRequest.m; sourceTree = "<group>"; };
+		FB1A7C2E1E9B7A4300B049E0 /* NGResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NGResponse.h; sourceTree = "<group>"; };
+		FB1A7C2F1E9B7A4300B049E0 /* NGResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NGResponse.m; sourceTree = "<group>"; };
+		FB1A7C311E9B8CAC00B049E0 /* NGConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NGConfig.h; sourceTree = "<group>"; };
+		FB1A7C321E9B8CAC00B049E0 /* NGConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NGConfig.m; sourceTree = "<group>"; };
+		FB1A7C341E9BD24400B049E0 /* NGModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NGModel.h; sourceTree = "<group>"; };
 		FB7D76121E7AB6C600210283 /* NGNetworkingSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NGNetworkingSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB7D76161E7AB6C600210283 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		FB7D76181E7AB6C600210283 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -117,8 +124,13 @@
 				FB7D763D1E7BB0D500210283 /* NGNetworking.h */,
 				FB7D763E1E7BB0D500210283 /* NGNetworkManager.h */,
 				FB7D763F1E7BB0D500210283 /* NGNetworkManager.m */,
-				FB1A7BB51E9B1CCC00B049E0 /* NGBaseRequest.h */,
-				FB1A7BB61E9B1CCC00B049E0 /* NGBaseRequest.m */,
+				FB1A7C341E9BD24400B049E0 /* NGModel.h */,
+				FB1A7C311E9B8CAC00B049E0 /* NGConfig.h */,
+				FB1A7C321E9B8CAC00B049E0 /* NGConfig.m */,
+				FB1A7C2B1E9B640F00B049E0 /* NGRequest.h */,
+				FB1A7C2C1E9B640F00B049E0 /* NGRequest.m */,
+				FB1A7C2E1E9B7A4300B049E0 /* NGResponse.h */,
+				FB1A7C2F1E9B7A4300B049E0 /* NGResponse.m */,
 			);
 			name = NGNetworking;
 			path = ../../NGNetworking;
@@ -247,10 +259,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB1A7C331E9B8CAC00B049E0 /* NGConfig.m in Sources */,
 				FB7D761D1E7AB6C600210283 /* ViewController.m in Sources */,
-				FB1A7BB71E9B1CCC00B049E0 /* NGBaseRequest.m in Sources */,
+				FB1A7C301E9B7A4300B049E0 /* NGResponse.m in Sources */,
 				FB7D761A1E7AB6C600210283 /* AppDelegate.m in Sources */,
 				FB7D76171E7AB6C600210283 /* main.m in Sources */,
+				FB1A7C2D1E9B640F00B049E0 /* NGRequest.m in Sources */,
 				FB7D76401E7BB0D500210283 /* NGNetworkManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

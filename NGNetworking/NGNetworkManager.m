@@ -7,9 +7,12 @@
 //
 
 #import "NGNetworkManager.h"
-#import "NGBaseRequest.h"
 #import <AFNetworking/AFNetworking.h>
 #import <YYModel/YYModel.h>
+
+#import "NGConfig.h"
+#import "NGRequest.h"
+#import "NGResponse.h"
 
 @interface NGNetworkManager ()
 
@@ -19,33 +22,22 @@
  */
 @property (nonatomic,strong) NSCache *taskCache;
 
-/** 网络请求库 */
-@property (nonatomic,assign) NGNetwokLib networkLib;
-/** HTTP请求方法 */
-@property (nonatomic,assign) NGHTTPMethod httpMethod;
-/** 请求URL串 */
-@property (nonatomic,copy) NSString *urlString;
-/** 是否打印log */
-@property (nonatomic,assign) BOOL isLog;
-
-
-/** 请求参数类型 */
-@property (nonatomic,assign) NGRequestType requestType;
-/** 请求参数 ( NGRequestTypeModel ) */
-@property (nonatomic,strong) NGBaseRequest *request;
-/** 请求参数 */
-@property (nonatomic,strong) id parameters;
-
-/** 请求成功返回类型 */
-@property (nonatomic,assign) NGResponseType responseType;
-/** 响应Model的Class */
-@property (nonatomic,strong) Class responseClass;
-
+/** config */
+@property (nonatomic,strong) NGConfig *config;
+/** request */
+@property (nonatomic,strong) NGRequest *request;
+/** response */
+@property (nonatomic,strong) NGResponse *response;
 
 /** 成功block */
 @property (nonatomic,copy) NGSuccessHandler successHandler;
 /** 失败block */
 @property (nonatomic,copy) NGFailureHandler failureHandler;
+
+/** HTTP请求 urlString  */
+@property (nonatomic,copy,readonly) NSString *urlString;
+/** HTTP请求 参数 */
+@property (nonatomic,strong,readonly) id parameters;
 
 @end
 
@@ -62,94 +54,53 @@
     static NGNetworkManager *_manager = nil;
     static dispatch_once_t once_token;
     dispatch_once(&once_token, ^{
-        _manager        = [[NGNetworkManager alloc] init];
-        _manager.isLog  = YES;
+        _manager = [[NGNetworkManager alloc] init];
     });
     return _manager;
 }
 
+#pragma mark - 
 
-- (NGNetworkManager *(^)(NGNetwokLib))ng_networkLib {
-    return ^ NGNetworkManager * (NGNetwokLib networkLib) {
-        self.networkLib = networkLib;
+- (NGNetworkManager *(^)(NGConfig *))ng_config {
+    return ^(NGConfig *config) {
+        _config = config;
         return self;
     };
 }
-
-- (NGNetworkManager *(^)(NGHTTPMethod))ng_httpMethod {
-    return ^ NGNetworkManager * (NGHTTPMethod method) {
-        self.httpMethod = method;
+- (NGNetworkManager *(^)(NGRequest *))ng_request {
+    return ^(NGRequest *request) {
+        _request = request;
         return self;
     };
 }
-- (NGNetworkManager *(^)(NSString *))ng_urlString {
-    return ^ NGNetworkManager * (NSString *url) {
-        self.urlString = url;
-        return self;
-    };
-}
-- (NGNetworkManager *(^)(BOOL))ng_isLog {
-    return ^ NGNetworkManager * (BOOL isLog) {
-        self.isLog = isLog;
-        return self;
-    };
-}
-
-- (NGNetworkManager *(^)(NGRequestType))ng_requestType {
-    return ^ NGNetworkManager * (NGRequestType requestType) {
-        self.requestType = requestType;
-        return self;
-    };
-}
-- (NGNetworkManager *(^)(NGBaseRequest *))ng_request {
-    return ^ NGNetworkManager * (NGBaseRequest *request) {
-        self.request    = request;
-        // 设置参数
-        self.parameters = request.ng_parameters;
-        return self;
-    };
-}
-- (NGNetworkManager *(^)(id))ng_parameters {
-    return ^ NGNetworkManager * (id parameters) {
-        self.parameters = parameters;
-        return self;
-    };
-}
-
-- (NGNetworkManager *(^)(NGResponseType))ng_responseType {
-    return ^ NGNetworkManager * (NGResponseType responseType) {
-        self.responseType = responseType;
-        return self;
-    };
-}
-- (NGNetworkManager *(^)(__unsafe_unretained Class))ng_responseClass {
-    return ^ NGNetworkManager * (Class responseClass) {
-        self.responseClass = responseClass;
+- (NGNetworkManager *(^)(NGResponse *))ng_response {
+    return ^(NGResponse *response) {
+        _response = response;
         return self;
     };
 }
 
 - (NGNetworkManager *(^)(NGSuccessHandler))ng_successHandler {
     return ^ NGNetworkManager * (NGSuccessHandler successHandler) {
-        self.successHandler = successHandler;
+        _successHandler = successHandler;
         return self;
     };
 }
 - (NGNetworkManager *(^)(NGFailureHandler))ng_failureHandler {
     return ^ NGNetworkManager * (NGFailureHandler failureHandler) {
-        self.failureHandler = failureHandler;
+        _failureHandler = failureHandler;
         return self;
     };
 }
 
-#pragma mark -
+#pragma mark Method
 
 - (NSUInteger)ng_start {
     
     [self _logRequest];
     
     NSURLSessionTask *task = nil;
-    switch (self.networkLib) {
+    switch (self.config.networkLib) {
         case NGNetworkLibAFNetworking: task = [self _startWithAFNetworking]; break;
         case NSNetworkLibNSURLSession: task = [self _startWithNSURLSession]; break;
     }
@@ -172,6 +123,16 @@
 
 #pragma mark - Networking
 
+- (NSString *)urlString {
+    return [NSString stringWithFormat:@"%@%@", self.config.baseUrlString, self.request.urlPathString];
+}
+- (id)parameters {
+    switch (self.request.requestType) {
+            case NGRequestTypeJSON: return self.request.parameters; break;
+            case NGRequestTypeModel: return [self.request yy_modelToJSONObject]; break;
+    }
+}
+
 #pragma mark AFNetworking
 
 - (NSURLSessionDataTask *)_startWithAFNetworking {
@@ -181,7 +142,7 @@
     manager.responseSerializer      = [AFHTTPResponseSerializer serializer];
     
     NSURLSessionDataTask *task      = nil;
-    switch (self.httpMethod) {
+    switch (self.config.httpMethod) {
         case NGHTTPMethodGet:
         {
             task = [manager GET:self.urlString parameters:self.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
@@ -213,12 +174,11 @@
     
     NSURL *url                      = [NSURL URLWithString:self.urlString];
     NSMutableURLRequest *request    = [NSMutableURLRequest requestWithURL:url];
-    switch (self.httpMethod) {
+    switch (self.config.httpMethod) {
         case NGHTTPMethodGet:   request.HTTPMethod = @"GET"; break;
         case NGHTTPMethodPost:  request.HTTPMethod = @"POST"; break;
     }
     request.HTTPBody                = [[self _httpBodyWithParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
-    
     
     __block NSURLSessionDataTask *task = nil;
     task = [[NSURLSession sessionWithConfiguration:configuration] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -244,15 +204,17 @@
     
     // 成功响应数据
     id response         = nil;
-    switch (self.responseType) {
+    switch (self.response.responseType) {
         case NGResponseTypeData:        response = responseObject; break;
         case NGResponseTypeJSON:        response = responseJSON;   break;
         case NGResponseTypeModel:
         {
             if ([responseJSON isKindOfClass:[NSArray class]]) { // 是JSON数组
-                response = [NSArray yy_modelArrayWithClass:self.responseClass json:responseJSON];
+                response = [NSArray yy_modelArrayWithClass:self.response.responseClass json:responseJSON];
             } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
-                response = [self.responseClass yy_modelWithJSON:responseJSON];
+                response = [self.response.responseClass yy_modelWithJSON:responseJSON];
+            } else {
+                response = responseObject;
             }
         }
             break;
@@ -300,11 +262,11 @@
 /** log请求信息 */
 - (void)_logRequest {
     NSMutableString *message = [NSMutableString string];
-    switch (self.networkLib) {
+    switch (self.config.networkLib) {
         case NGNetworkLibAFNetworking: [message appendString:@"AFNetworking"]; break;
         case NSNetworkLibNSURLSession: [message appendString:@"NSURLSession"]; break;
     }
-    switch (self.httpMethod) {
+    switch (self.config.httpMethod) {
         case NGHTTPMethodGet:   [message appendString:@" GET"]; break;
         case NGHTTPMethodPost:  [message appendString:@" POST"]; break;
     }
@@ -347,7 +309,7 @@
  *  打印log日志
  */
 - (void)_logWithTitle:(NSString *)title message:(NSString *)message {
-    if (self.isLog) {
+    if (self.config.isLog) {
         NSMutableString *log = [NSMutableString string];
         if (title && (title.length != 0)) {
             [log appendFormat:@"%@ : ", title];

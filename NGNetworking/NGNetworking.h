@@ -9,7 +9,10 @@
 #ifndef NGNetworking_h
 #define NGNetworking_h
 
+#import "NGModel.h"
+#import "NGConfig.h"
+#import "NGRequest.h"
+#import "NGResponse.h"
 #import "NGNetworkManager.h"
-#import "NGBaseRequest.h"
 
 #endif 

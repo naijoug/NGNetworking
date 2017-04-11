@@ -10,31 +10,43 @@
 #import "NGNetworking.h"
 
 
-@interface TestRequest : NGBaseRequest
+#pragma mark - Model
 
-/** cmd */
-@property (nonatomic,copy) NSString *cmd;
+@interface BookRequest : NGRequest
+@property (nonatomic,copy) NSString *q;
+@end
+
+@implementation BookRequest
+- (NSString *)q { return @"iOS"; }
+@end
+
+@interface BookInfo : NSObject
+
+@property (nonatomic,copy) NSString *subtitle;
+@property (nonatomic,strong) NSArray *author;
+
+@end
+@implementation BookInfo
+
+@end
+@interface BookList : NSObject<NGModel>
+
+@property (nonatomic,strong) NSNumber *count;
+@property (nonatomic,strong) NSNumber *start;
+@property (nonatomic,strong) NSNumber *total;
+@property (nonatomic,strong) NSArray *books;
+
+@end
+@implementation BookList
+
++ (NSDictionary<NSString *,id> *)modelContainerPropertyGenericClass {
+    return @{@"books": [BookInfo class]};
+}
 
 @end
 
-@implementation TestRequest
 
-@end
-
-@interface PosLine : NSObject
-
-/** pos */
-@property (nonatomic,copy) NSString *pos;
-/** value */
-@property (nonatomic,strong) NSNumber *value;
-
-@end
-
-@implementation PosLine
-
-
-@end
-
+#pragma mark -
 
 @interface ViewController ()
 
@@ -46,28 +58,27 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    NSString *urlString = @"http://www.gupiaogaoshou.com:8090/v2/ex/ai/ai/apply.jsp";
     
-    TestRequest *request = [TestRequest ng_request];
-    request.cmd = @"getPosLine";
+    NGConfig *config = [NGConfig ng_config].ng_baseUrlString(@"https://api.douban.com")
+                                           .ng_isLog(YES)
+                                           .ng_httpMethod(NGHTTPMethodPost);
     
+    NGRequest *request = [BookRequest ng_request].ng_urlPathString(@"/v2/book/search").ng_requestType(NGRequestTypeModel);
+    NGResponse *response = [NGResponse ng_response].ng_responseType(NGResponseTypeModel).ng_responseClass([BookList class]);
     
-    [[NGNetworkManager shareManager].ng_httpMethod(NGHTTPMethodPost).ng_urlString(urlString)
-     .ng_requestType(NGRequestTypeModel).ng_request(request)
-     .ng_responseType(NGResponseTypeModel).ng_responseClass([PosLine class])
-     .ng_successHandler(^(NSInteger stateCode, id response){
-        NSLog(@"response : %@", response);
+    [[NGNetworkManager shareManager]
+     .ng_config(config)
+     .ng_request(request)
+     .ng_response(response)
+     .ng_successHandler(^(NSInteger stateCode, id response) {
+         NSLog(@"response : %@", response);
     }).ng_failureHandler(^(NSError *error){
         NSLog(@"error : %@", error.description);
     }) ng_start];
     
+    
 }
-
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 
 @end
+
+
