@@ -13,6 +13,7 @@
 #import "NGConfig.h"
 #import "NGRequest.h"
 #import "NGResponse.h"
+#import "NSError+NGNetworking.h"
 
 @interface NGNetworkManager ()
 
@@ -213,7 +214,7 @@
                 response = [NSArray yy_modelArrayWithClass:self.response.responseClass json:responseJSON];
             } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
                 response = [self.response.responseClass yy_modelWithJSON:responseJSON];
-            } else {
+            } else { // Model解析错误
                 response = responseObject;
             }
         }
