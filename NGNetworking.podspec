@@ -10,8 +10,8 @@ Pod::Spec.new do |s|
   s.author              = { "naijoug" => "naijoug@126.com" }
   s.platform            = :ios, "7.0"
   s.source              = { :git => "https://github.com/naijoug/NGNetworking.git", :tag => "#{s.version}" }
-  s.public_header_files = "NGNetworking/*.h"
-  s.source_files        = "NGNetworking/*.{h,m}"
+  s.public_header_files = "NGNetworking/**/*.h"
+  s.source_files        = "NGNetworking/**/*.{h,m}"
   s.framework           = "Foundation"
   s.requires_arc        = true
   s.dependency "AFNetworking", "~> 3.0.0"

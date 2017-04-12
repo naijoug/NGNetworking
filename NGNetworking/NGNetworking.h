@@ -16,9 +16,9 @@
 #import "NGNetworkManager.h"
 
 #import "NGConfig.h"
-#import "NGTask/NGTask.h"
-#import "NGTask/NGRequest.h"
-#import "NGTask/NGResponse.h"
+#import "NGTask.h"
+#import "NGRequest.h"
+#import "NGResponse.h"
 
 #import "NGModel.h"
 #import "NSError+NGNetworking.h"
