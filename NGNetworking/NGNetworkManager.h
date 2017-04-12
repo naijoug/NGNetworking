@@ -7,40 +7,50 @@
 //
 
 #import <Foundation/Foundation.h>
-
-typedef void (^NGSuccessHandler)(NSInteger stateCode, id response);
-typedef void (^NGFailureHandler)(NSError *error);
+#import "NGTask.h"
 
 @class NGConfig;
-@class NGRequest;
-@class NGResponse;
 @interface NGNetworkManager : NSObject
 
 + (instancetype)ng_shareManager;
 
-/** 设置HTTP配置 */
-- (NGNetworkManager * (^)(NGConfig *config))ng_config;
-/** 设置请求类型 */
-- (NGNetworkManager * (^)(NGRequest *request))ng_request;
-/** 设置响应类型 */
-- (NGNetworkManager * (^)(NGResponse *response))ng_response;
-
-/** 请求成功回调block */
-- (NGNetworkManager * (^)(NGSuccessHandler successHandler))ng_successHandler;
-/** 请求失败回调block */
-- (NGNetworkManager * (^)(NGFailureHandler failureHandler))ng_failureHandler;
+/**  全局配置 config */
+@property (nonatomic,strong,readonly) NGConfig *ng_config;
 
 #pragma mark Method
-/**
- *  启动请求任务
- */
-- (NSUInteger)ng_start;
 
 /**
- *  取消请求
- *  
- *  @param taskIdentifier 任务ID
+ *  启动一个请求任务 ( 设置回调 )
  */
-- (void)ng_cancelWithTaskIdentifier:(NSUInteger)taskIdentifier;
+- (void)ng_startNGTask:(NGTask *)ng_task success:(NGSuccessHandler)success failure:(NGFailureHandler)failure;
+/**
+ *  启动一个请求任务
+ */
+- (void)ng_startNGTask:(NGTask *)ng_task;
+
+/**
+ *  取消一个请求任务
+ */
+- (void)ng_cancelNGTask:(NGTask *)ng_task;
+
+@end
+
+@interface NGNetworkManager (NGChain)
+
+/** 设置全局配置 */
+@property (nonatomic,strong,readonly) NGNetworkManager * (^c_ng_config)(NGConfig *config);
+
+@end
+
+@interface NGNetworkManager (NGLog)
+
+/**
+ *  打印 error 信息
+ */
+- (void)logWithTitle:(NSString *)title error:(NSError *)error;
+/**
+ *  打印log日志
+ */
+- (void)logWithTitle:(NSString *)title message:(NSString *)message;
 
 @end

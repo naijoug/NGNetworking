@@ -12,7 +12,7 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _isLog = YES;   // 默认开启log
+        _ng_isLog = YES;   // 默认开启log
     }
     return self;
 }
@@ -21,27 +21,25 @@
     return [[self alloc] init];
 }
 
-- (NGConfig * (^)(NSString *))ng_baseUrlString {
+@end
+
+@implementation NGConfig (NGChain)
+
+- (NGConfig * (^)(NSString *))c_ng_baseUrlString {
     return ^(NSString *baseUrlString) {
-        _baseUrlString = baseUrlString;
+        _ng_baseUrlString = baseUrlString;
         return self;
     };
 }
-- (NGConfig * (^)(NGNetwokLib))ng_networkLib {
+- (NGConfig * (^)(NGNetwokLib))c_ng_networkLib {
     return ^(NGNetwokLib networkLib) {
-        _networkLib = networkLib;
+        _ng_networkLib = networkLib;
         return self;
     };
 }
-- (NGConfig * (^)(NGHTTPMethod))ng_httpMethod {
-    return ^(NGHTTPMethod httpMethod) {
-        _httpMethod = httpMethod;
-        return self;
-    };
-}
-- (NGConfig * (^)(BOOL))ng_isLog {
+- (NGConfig * (^)(BOOL))c_ng_isLog {
     return ^(BOOL isLog) {
-        _isLog = isLog;
+        _ng_isLog = isLog;
         return self;
     };
 }

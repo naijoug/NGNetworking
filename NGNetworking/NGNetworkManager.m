@@ -6,39 +6,16 @@
 //  Copyright © 2017年 naijoug. All rights reserved.
 //
 
-#import "NGNetworkManager.h"
+#import "NGNetworking.h"
 #import <AFNetworking/AFNetworking.h>
-#import <YYModel/YYModel.h>
-
-#import "NGConfig.h"
-#import "NGRequest.h"
-#import "NGResponse.h"
-#import "NSError+NGNetworking.h"
 
 @interface NGNetworkManager ()
 
 /** 请求任务字典
- *  key     : taskIdentifier
- *  value   : NSURLSessionTask
+ *  key     : hash
+ *  value   : NSTask
  */
 @property (nonatomic,strong) NSCache *taskCache;
-
-/** config */
-@property (nonatomic,strong) NGConfig *config;
-/** request */
-@property (nonatomic,strong) NGRequest *request;
-/** response */
-@property (nonatomic,strong) NGResponse *response;
-
-/** 成功block */
-@property (nonatomic,copy) NGSuccessHandler successHandler;
-/** 失败block */
-@property (nonatomic,copy) NGFailureHandler failureHandler;
-
-/** HTTP请求 urlString  */
-@property (nonatomic,copy,readonly) NSString *urlString;
-/** HTTP请求 参数 */
-@property (nonatomic,strong,readonly) id parameters;
 
 @end
 
@@ -56,141 +33,100 @@
     static dispatch_once_t once_token;
     dispatch_once(&once_token, ^{
         _manager = [[NGNetworkManager alloc] init];
+        _manager.c_ng_config([NGConfig ng_config]);
     });
     return _manager;
 }
 
 #pragma mark - 
 
-- (NGNetworkManager * (^)(NGConfig *))ng_config {
-    return ^(NGConfig *config) {
-        _config = config;
-        return self;
-    };
-}
-- (NGNetworkManager * (^)(NGRequest *))ng_request {
-    return ^(NGRequest *request) {
-        _request = request;
-        return self;
-    };
-}
-- (NGNetworkManager * (^)(NGResponse *))ng_response {
-    return ^(NGResponse *response) {
-        _response = response;
-        return self;
-    };
-}
-
-- (NGNetworkManager * (^)(NGSuccessHandler))ng_successHandler {
-    return ^ NGNetworkManager * (NGSuccessHandler successHandler) {
-        _successHandler = successHandler;
-        return self;
-    };
-}
-- (NGNetworkManager * (^)(NGFailureHandler))ng_failureHandler {
-    return ^ NGNetworkManager * (NGFailureHandler failureHandler) {
-        _failureHandler = failureHandler;
-        return self;
-    };
-}
-
 #pragma mark Method
 
-- (NSUInteger)ng_start {
+- (void)ng_startNGTask:(NGTask *)ng_task success:(NGSuccessHandler)success failure:(NGFailureHandler)failure {
+    ng_task.ng_success = success;
+    ng_task.ng_failure = failure;
     
-    if (!self.config) { [self _logWithTitle:@"参数设置错误" message:@"未设置 config "]; return 0; }
-    if (!self.request) { [self _logWithTitle:@"参数设置错误" message:@"未设置 request "]; return 0; }
-    if (!self.response) { [self _logWithTitle:@"参数设置错误" message:@"未设置 response "]; return 0; }
-    
-    [self _logRequest];
-    
-    NSURLSessionTask *task = nil;
-    switch (self.config.networkLib) {
-        case NGNetworkLibAFNetworking: task = [self _startWithAFNetworking]; break;
-        case NSNetworkLibNSURLSession: task = [self _startWithNSURLSession]; break;
-    }
-    
-    // 添加任务缓存中
-    NSUInteger taskIndentifier = task.taskIdentifier;
-    [self.taskCache setObject:task forKey:@(taskIndentifier)];
-    
-    return taskIndentifier;
+    [self ng_startNGTask:ng_task];
 }
 
-- (void)ng_cancelWithTaskIdentifier:(NSUInteger)taskIdentifier {
+- (void)ng_startNGTask:(NGTask *)ng_task {
     
-    NSURLSessionTask *task = [self.taskCache objectForKey:@(taskIdentifier)];
+    [self _logRequestWithNGTask:ng_task];
+    
+    NSURLSessionTask *task = nil;
+    switch (self.ng_config.ng_networkLib) {
+            case NGNetworkLibAFNetworking: task = [self _startAFNetworkingWithNGTask:ng_task]; break;
+            case NSNetworkLibNSURLSession: task = [self _startNSURLSessionWithNGTask:ng_task]; break;
+    }
+    ng_task.ng_sessionTask = task;
+    // 添加任务缓存中
+    [self.taskCache setObject:ng_task forKey:@(ng_task.hash)];
+}
+
+- (void)ng_cancelNGTask:(NGTask *)ng_task {
+    NSURLSessionTask *task = [self.taskCache objectForKey:@(ng_task.hash)];
     if (task) { // 取消任务，并从缓存中移除
+        [self.taskCache removeObjectForKey:@(ng_task.hash)];
         [task cancel];
-        [self.taskCache removeObjectForKey:@(taskIdentifier)];
     }
 }
 
 #pragma mark - Networking
 
-- (NSString *)urlString {
-    return [NSString stringWithFormat:@"%@%@", self.config.baseUrlString, self.request.urlPathString];
-}
-- (id)parameters {
-    switch (self.request.requestType) {
-            case NGRequestTypeJSON: return self.request.parameters; break;
-            case NGRequestTypeModel: return [self.request yy_modelToJSONObject]; break;
-    }
-}
-
 #pragma mark AFNetworking
 
-- (NSURLSessionDataTask *)_startWithAFNetworking {
+- (NSURLSessionDataTask *)_startAFNetworkingWithNGTask:(NGTask *)ng_task {
     
     AFHTTPSessionManager *manager   = [AFHTTPSessionManager manager];
     manager.requestSerializer       = [AFHTTPRequestSerializer serializer];
     manager.responseSerializer      = [AFHTTPResponseSerializer serializer];
     
     NSURLSessionDataTask *task      = nil;
-    switch (self.config.httpMethod) {
-        case NGHTTPMethodGet:
-        {
-            task = [manager GET:self.urlString parameters:self.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-                [self _handlerSuccessWithTask:task responseObject:responseObject];
+    switch (ng_task.ng_httpMethod) {
+        case NGHTTPMethodGet: {
+            task = [manager GET:[self _baseUrlStringWithNGTask:ng_task]
+                     parameters:ng_task.ng_request.ng_parameters
+                       progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+                [self _handlerSuccessWithNGTask:ng_task task:task responseObject:responseObject];
             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-                [self _handlerFailureWithTask:task error:error];
+                [self _handlerFailureWithNGTask:ng_task task:task error:error];
             }];
         }
             break;
-        case NGHTTPMethodPost:
-        {
-            task = [manager POST:self.urlString parameters:self.parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-                [self _handlerSuccessWithTask:task responseObject:responseObject];
+        case NGHTTPMethodPost: {
+            task = [manager POST:[self _baseUrlStringWithNGTask:ng_task]
+                      parameters:ng_task.ng_request.ng_parameters
+                        progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+                [self _handlerSuccessWithNGTask:ng_task task:task responseObject:responseObject];
             } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-                [self _handlerFailureWithTask:task error:error];
+                [self _handlerFailureWithNGTask:ng_task task:task error:error];
             }];
         }
             break;
     }
-    
     return task;
 }
 
 #pragma mark NSURLSessionTask
 
-- (NSURLSessionDataTask *)_startWithNSURLSession {
+- (NSURLSessionDataTask *)_startNSURLSessionWithNGTask:(NGTask *)ng_task {
     
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
     
-    NSURL *url                      = [NSURL URLWithString:self.urlString];
+    NSURL *url                      = [NSURL URLWithString:[self _baseUrlStringWithNGTask:ng_task]];
     NSMutableURLRequest *request    = [NSMutableURLRequest requestWithURL:url];
-    switch (self.config.httpMethod) {
+    switch (ng_task.ng_httpMethod) {
         case NGHTTPMethodGet:   request.HTTPMethod = @"GET"; break;
         case NGHTTPMethodPost:  request.HTTPMethod = @"POST"; break;
     }
-    request.HTTPBody                = [[self _httpBodyWithParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+    request.HTTPBody                = [[self _httpBodyWithParameters:ng_task.ng_request.ng_parameters] dataUsingEncoding:NSUTF8StringEncoding];
     
     __block NSURLSessionDataTask *task = nil;
     task = [[NSURLSession sessionWithConfiguration:configuration] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) { // 失败
-            [self _handlerFailureWithTask:task error:error];
+            [self _handlerFailureWithNGTask:ng_task task:task error:error];
         } else { // 成功
-            [self _handlerSuccessWithTask:task responseObject:data];
+            [self _handlerSuccessWithNGTask:ng_task task:task responseObject:data];
         }
     }];
     [task resume];
@@ -200,52 +136,45 @@
 
 #pragma mark Handler
 /** 处理成功返回 */
-- (void)_handlerSuccessWithTask:(NSURLSessionDataTask *)task responseObject:(id)responseObject {
+- (void)_handlerSuccessWithNGTask:(NGTask *)ng_task
+                             task:(NSURLSessionDataTask *)task
+                   responseObject:(id)responseObject {
     [self _logResponse:responseObject];
     
-    // data -> String
-    NSString *responseString        = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
-    // data -> JSON
-    NSError *error;
-    id responseJSON     = [NSJSONSerialization JSONObjectWithData:responseObject options:kNilOptions error:&error];
-    [self _logWithTitle:@"JSON解析错误" error:error];
-    
-    // 成功响应数据
-    id response         = responseString;
-    switch (self.response.responseType) {
-        case NGResponseTypeString:      response = responseString; break;
-        case NGResponseTypeData:        response = responseObject; break;
-        case NGResponseTypeJSON:        response = responseJSON;   break;
-        case NGResponseTypeModel: // response 解析成 Model
-        {
-            if (self.response.responseClass) {
-                if ([responseJSON isKindOfClass:[NSArray class]]) { // 是JSON数组
-                    response = [NSArray yy_modelArrayWithClass:self.response.responseClass json:responseJSON];
-                } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
-                    response = [self.response.responseClass yy_modelWithJSON:responseJSON];
-                }
-            } else {
-                [self _logWithTitle:@"Model解析错误" message:@"未设置 responseClass 类型"];
-            }
-        }
-            break;
-    }
-    
-    NSHTTPURLResponse *urlResponse  = (NSHTTPURLResponse *)task.response;
-    if (self.successHandler) {
-        self.successHandler(urlResponse.statusCode, response);
+    id response = [ng_task.ng_response ng_responseWithResponseObject:responseObject];
+    NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *)task.response;
+    if (ng_task.ng_success) {
+        ng_task.ng_success(urlResponse.statusCode, response);
     }
 }
 /** 处理失败返回 */
-- (void)_handlerFailureWithTask:(NSURLSessionDataTask *)task error:(NSError *)error {
-    [self _logWithTitle:@"HTTP请求错误" error:error];
-    if (self.failureHandler) {
-        self.failureHandler(error);
+- (void)_handlerFailureWithNGTask:(NGTask *)ng_task
+                             task:(NSURLSessionDataTask *)task
+                            error:(NSError *)error {
+    [self logWithTitle:@"HTTP请求错误" error:error];
+    /* error code:
+     *
+     * 3840  : 服务器返回(500),请求错误，导致服务器异常
+     * -1001 : 请求超时
+     * -1003 : 未能找到使用指定主机名的服务器
+     * -1004 : 未能连接到服务器
+     * -1005 : 网络连接已中断
+     * -1009 : 似乎已断开与互联网的连接
+     */
+    if (ng_task.ng_failure) {
+       ng_task.ng_failure(error);
     }
 }
 
 
 #pragma mark - Tool
+
+/**
+ *  拼接HTTP请求baseUrlString
+ */
+- (NSString *)_baseUrlStringWithNGTask:(NGTask *)ng_task {
+    return [NSString stringWithFormat:@"%@%@", self.ng_config.ng_baseUrlString, ng_task.ng_request.ng_urlPathString];
+}
 
 /**
  *  请求参数转化为HTTP请求的body串
@@ -272,23 +201,23 @@
 #pragma mark - Log
 
 /** log请求信息 */
-- (void)_logRequest {
+- (void)_logRequestWithNGTask:(NGTask *)ng_task {
     NSMutableString *message = [NSMutableString string];
-    switch (self.config.networkLib) {
+    switch (self.ng_config.ng_networkLib) {
         case NGNetworkLibAFNetworking: [message appendString:@"AFNetworking"]; break;
         case NSNetworkLibNSURLSession: [message appendString:@"NSURLSession"]; break;
     }
-    switch (self.config.httpMethod) {
+    switch (ng_task.ng_httpMethod) {
         case NGHTTPMethodGet:   [message appendString:@" GET"]; break;
         case NGHTTPMethodPost:  [message appendString:@" POST"]; break;
     }
-    [message appendFormat:@"\nRequest : %@", self.urlString];
-    if (self.parameters) { // 有参数
+    [message appendFormat:@"\nRequest : %@", [self _baseUrlStringWithNGTask:ng_task]];
+    if (ng_task.ng_request.ng_parameters) { // 有参数
         [message appendString:@"?"];
-        [message appendString:[self _httpBodyWithParameters:self.parameters]];
+        [message appendString:[self _httpBodyWithParameters:ng_task.ng_request.ng_parameters]];
     }
     
-    [self _logWithTitle:@"发送请求" message:message];
+    [self logWithTitle:@"发送请求" message:message];
 }
 
 /** log响应信息 */
@@ -299,7 +228,7 @@
     } else {
         NSError *error      = nil;
         responseData        = [NSJSONSerialization dataWithJSONObject:response options:kNilOptions error:&error];
-        [self _logWithTitle:@"Response log JSON解析失败" error:error];
+        [self logWithTitle:@"Response log JSON解析失败" error:error];
     }
     
     NSString *message       = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
@@ -307,21 +236,32 @@
     message                 = [message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     message                 = [message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     message                 = [NSString stringWithFormat:@"\nResponse : %@\n\n", message];
-    [self _logWithTitle:@"响应数据" message:message];
+    [self logWithTitle:@"响应数据" message:message];
 }
 
-/** log错误信息 */
-- (void)_logWithTitle:(NSString *)title error:(NSError *)error {
+@end
+
+@implementation NGNetworkManager (NGChain)
+
+- (NGNetworkManager *(^)(NGConfig *))c_ng_config {
+    return ^(NGConfig *config) {
+        _ng_config = config;
+        return self;
+    };
+}
+
+@end
+
+@implementation NGNetworkManager (NGLog)
+
+- (void)logWithTitle:(NSString *)title error:(NSError *)error {
     if ( error ) { // 有错误信息，打印
-        [self _logWithTitle:title message:error.description];
+        [self logWithTitle:title message:error.description];
     }
 }
 
-/**
- *  打印log日志
- */
-- (void)_logWithTitle:(NSString *)title message:(NSString *)message {
-    if (self.config.isLog) {
+- (void)logWithTitle:(NSString *)title message:(NSString *)message {
+    if (self.ng_config.ng_isLog) {
         NSMutableString *log = [NSMutableString string];
         if (title && (title.length != 0)) {
             [log appendFormat:@"%@ : ", title];
@@ -333,6 +273,5 @@
         NSLog(@"%@", log);
     }
 }
-
 
 @end

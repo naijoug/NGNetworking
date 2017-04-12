@@ -5,7 +5,8 @@
 //  Created by guojian on 2017/3/16.
 //  Copyright © 2017年 naijoug. All rights reserved.
 //
-//  NGNetworking 是封装`AFNetworking`的一个链式网络请求库，json转Model使用的是`YYModel`
+//  NGNetworking 是封装`AFNetworking`的一个网络请求库，json转Model使用的是`YYModel`
+//               加入了链式调用的接口( 包含在分类 NGChain 中 )
 //  Github : https://github.com/naijoug/NGNetworking
 
 
@@ -14,10 +15,12 @@
 
 #import "NGNetworkManager.h"
 
-#import "NGModel.h"
 #import "NGConfig.h"
-#import "NGRequest.h"
-#import "NGResponse.h"
+#import "NGTask/NGTask.h"
+#import "NGTask/NGRequest.h"
+#import "NGTask/NGResponse.h"
+
+#import "NGModel.h"
 #import "NSError+NGNetworking.h"
 
 #endif 
