@@ -7,7 +7,7 @@
 //  url request 
 
 #import <Foundation/Foundation.h>
-#import "NGModel.h"
+#import "NSObject+NGModel.h"
 
 /** HTTP请求数据类型 */
 typedef NS_ENUM(NSInteger, NGRequestType) {
@@ -15,7 +15,7 @@ typedef NS_ENUM(NSInteger, NGRequestType) {
     NGRequestTypeJSON,          // JSON字典 (NSDictionary)
 };
 
-@interface NGRequest : NSObject<NGModel>
+@interface NGRequest : NSObject
 
 + (instancetype)ng_request;
 

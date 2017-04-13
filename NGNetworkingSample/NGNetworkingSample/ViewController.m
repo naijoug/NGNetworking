@@ -37,7 +37,7 @@
 @implementation BookInfo
 
 @end
-@interface BookList : NSObject<NGModel>
+@interface BookList : NSObject
 
 @property (nonatomic,strong) NSNumber *count;
 @property (nonatomic,strong) NSNumber *start;

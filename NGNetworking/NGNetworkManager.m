@@ -173,7 +173,7 @@
  *  拼接HTTP请求baseUrlString
  */
 - (NSString *)_baseUrlStringWithNGTask:(NGTask *)ng_task {
-    return [NSString stringWithFormat:@"%@%@", self.ng_config.ng_baseUrlString, ng_task.ng_request.ng_urlPathString];
+    return [NSString stringWithFormat:@"%@%@", self.ng_config.ng_baseUrlString ?: @"", ng_task.ng_request.ng_urlPathString ?: @""];
 }
 
 /**

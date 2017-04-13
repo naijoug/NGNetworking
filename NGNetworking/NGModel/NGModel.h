@@ -14,13 +14,13 @@
 /** 
  * model <-> JSON 自定义字段映射
  *
- * @{@"nid" :@"id"};
+ * @{ @"nid" : @"id" };
  */
 + (nullable NSDictionary<NSString *,id> *)modelCustomPropertyMapper;
 /** 
  * model <-> JSON Array中Model Class映射
  *  
- * @{@"books": [BookInfo class]};
+ * @{ @"books" : [BookInfo class] };
  */
 + (nullable NSDictionary<NSString *, id> *)modelContainerPropertyGenericClass;
 /** 

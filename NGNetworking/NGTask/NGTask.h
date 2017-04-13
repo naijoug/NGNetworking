@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "NGRequest.h"
+#import "NGResponse.h"
 
 /** 请求成功回调 */
 typedef void (^NGSuccessHandler)(NSInteger statusCode, id response);
@@ -19,8 +21,6 @@ typedef NS_ENUM(NSInteger, NGHTTPMethod) {
     NGHTTPMethodGet,            // GET请求
 };
 
-@class NGRequest;
-@class NGResponse;
 @interface NGTask : NSObject
 
 + (instancetype)ng_task;

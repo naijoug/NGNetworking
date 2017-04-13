@@ -7,8 +7,6 @@
 //
 
 #import "NGTask.h"
-#import "NGRequest.h"
-#import "NGResponse.h"
 #import <YYModel/YYModel.h>
 
 @implementation NGTask
