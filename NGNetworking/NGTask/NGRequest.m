@@ -7,7 +7,6 @@
 //
 
 #import "NGRequest.h"
-#import <YYModel/YYModel.h>
 
 @implementation NGRequest
 
@@ -18,7 +17,7 @@
 - (id)ng_parameters {
     switch (self.ng_requestType) {
             case NGRequestTypeJSON:     return _ng_parameters; break;
-            case NGRequestTypeModel:    return [self yy_modelToJSONObject]; break;
+            case NGRequestTypeModel:    return [self ng_modelToJSONObject]; break;
     }
 }
 

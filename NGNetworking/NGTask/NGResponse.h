@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "NSObject+NGModel.h"
+#import <NGModel/NGModel.h>
 
 /** HTTP成功响应数据类型 */
 typedef NS_ENUM(NSInteger, NGResponseType) {

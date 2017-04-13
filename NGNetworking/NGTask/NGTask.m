@@ -7,7 +7,7 @@
 //
 
 #import "NGTask.h"
-#import <YYModel/YYModel.h>
+#import <NGModel/NGModel.h>
 
 @implementation NGTask
 
@@ -19,7 +19,7 @@
     NSMutableString *mString = [NSMutableString string];
     [mString appendFormat:@"%ld ", (long)self.ng_httpMethod];
     [mString appendFormat:@"%@ ", self.ng_request.ng_urlPathString];
-    [mString appendFormat:@"%@", [self.ng_request.ng_parameters yy_modelToJSONString]];
+    [mString appendFormat:@"%@", [self.ng_request.ng_parameters ng_modelToJSONString]];
     
     return [mString hash];
 }

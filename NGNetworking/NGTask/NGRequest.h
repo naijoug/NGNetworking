@@ -7,7 +7,7 @@
 //  url request 
 
 #import <Foundation/Foundation.h>
-#import "NSObject+NGModel.h"
+#import <NGModel/NGModel.h>
 
 /** HTTP请求数据类型 */
 typedef NS_ENUM(NSInteger, NGRequestType) {

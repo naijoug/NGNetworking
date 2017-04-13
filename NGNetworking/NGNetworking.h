@@ -20,7 +20,6 @@
 #import "NGRequest.h"
 #import "NGResponse.h"
 
-#import "NSObject+NGModel.h"
 #import "NSError+NGNetworking.h"
 
 #endif 

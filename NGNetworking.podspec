@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name                = "NGNetworking"
-  s.version             = "0.2.1"
+  s.version             = "0.3.0"
   s.summary             = "A DIY network lib by AFNetworking."
   s.description         = <<-DESC
         A DIY network lib by AFNetworking !!!
@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.source_files        = "NGNetworking/**/*.{h,m}"
   s.framework           = "Foundation"
   s.requires_arc        = true
-  s.dependency "AFNetworking", "~> 3.0.0"
-  s.dependency "YYModel", "~> 1.0.4"
+  s.dependency "AFNetworking", "~> 3.1.0"
+  s.dependency "NGModel", "~> 0.0.2"
 
 end

@@ -7,7 +7,6 @@
 //
 
 #import "NGResponse.h"
-#import <YYModel/YYModel.h>
 #import "NGNetworkManager.h"
 
 @implementation NGResponse
@@ -36,9 +35,9 @@
                     [[NGNetworkManager ng_shareManager] logWithTitle:@"Model解析错误" message:@"未设置 responseClass 类型"];
                 }
                 if ([responseJSON isKindOfClass:[NSArray class]]) { // 是JSON数组
-                    response = [NSArray yy_modelArrayWithClass:self.ng_responseClass json:responseJSON];
+                    response = [NSArray ng_modelArrayWithClass:self.ng_responseClass json:responseJSON];
                 } else if ([responseJSON isKindOfClass:[NSDictionary class]]) { // 是JSON字典
-                    response = [self.ng_responseClass yy_modelWithJSON:responseJSON];
+                    response = [self.ng_responseClass ng_modelWithJSON:responseJSON];
                 }
             }
             break;

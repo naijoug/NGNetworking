@@ -47,7 +47,7 @@
 @end
 @implementation BookList
 
-+ (NSDictionary<NSString *,id> *)modelContainerPropertyGenericClass {
++ (NSDictionary<NSString *,id> *)ng_modelContainerPropertyGenericClass {
     return @{@"books": [BookInfo class]};
 }
 
