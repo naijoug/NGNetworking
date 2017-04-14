@@ -26,7 +26,7 @@
 }
 
 + (instancetype)ng_errorWithCode:(NSInteger)code message:(NSString *)message {
-    NSError *error      = [[NSError alloc] init];
+    NSError *error      = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorUnknown userInfo:nil];
     error.ng_code       = code;
     error.ng_message    = message;
     return error;

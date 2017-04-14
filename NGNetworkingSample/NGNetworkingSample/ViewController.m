@@ -66,6 +66,10 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
+    // test error
+    NSError *error = [NSError ng_errorWithCode:-2 message:@"未知错误"];
+    NSLog(@"error : %ld, %@", error.ng_code, error.ng_message);
+    
     NGConfig *config     = [NGConfig ng_config].c_ng_baseUrlString(@"https://api.douban.com");//.c_ng_isLog(NO);
     
     BookRequest *request = [BookRequest ng_request];

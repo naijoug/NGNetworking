@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name                = "NGNetworking"
-  s.version             = "0.3.0"
+  s.version             = "0.3.1"
   s.summary             = "A DIY network lib by AFNetworking."
   s.description         = <<-DESC
         A DIY network lib by AFNetworking !!!
