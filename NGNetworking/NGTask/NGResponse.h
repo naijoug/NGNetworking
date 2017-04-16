@@ -27,9 +27,11 @@ typedef NS_ENUM(NSInteger, NGResponseType) {
 @property (nonatomic,strong) Class ng_responseClass;
 
 /**
- *  通过 ng_responseType 解析返回数据(NSData)
+ *  通过 ng_responseType 解析 response 数据
+ *
+ *  @param response ( String、NSData、JSON(NSDictionary || NSArray) )
  */
-- (id)ng_responseWithResponseObject:(id)responseObject;
+- (id)ng_paraseResponse:(id)response;
 
 @end
 

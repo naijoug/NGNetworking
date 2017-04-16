@@ -141,10 +141,9 @@
                    responseObject:(id)responseObject {
     [self _logResponse:responseObject];
     
-    id response = [ng_task.ng_response ng_responseWithResponseObject:responseObject];
     NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *)task.response;
     if (ng_task.ng_success) {
-        ng_task.ng_success(urlResponse.statusCode, response);
+        ng_task.ng_success(urlResponse.statusCode, [ng_task.ng_response ng_paraseResponse:responseObject]);
     }
 }
 /** 处理失败返回 */
