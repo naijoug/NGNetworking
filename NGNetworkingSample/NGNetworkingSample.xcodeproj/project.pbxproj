@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9B6C8CA0485B580619797189 /* Pods_NGNetworkingSample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7EA851335C1E84CC42D993A /* Pods_NGNetworkingSample.framework */; };
 		FB1A7C331E9B8CAC00B049E0 /* NGConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7C321E9B8CAC00B049E0 /* NGConfig.m */; };
 		FB1A7C3A1E9C7B8700B049E0 /* NSError+NGNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7C391E9C7B8700B049E0 /* NSError+NGNetworking.m */; };
 		FB1A7C591E9DD89200B049E0 /* NGRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1A7C541E9DD89200B049E0 /* NGRequest.m */; };
@@ -20,6 +19,7 @@
 		FB7D76221E7AB6C600210283 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB7D76211E7AB6C600210283 /* Assets.xcassets */; };
 		FB7D76251E7AB6C600210283 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB7D76231E7AB6C600210283 /* LaunchScreen.storyboard */; };
 		FB7D76401E7BB0D500210283 /* NGNetworkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB7D763F1E7BB0D500210283 /* NGNetworkManager.m */; };
+		FB9F2CA91EA9031E008F79AE /* Pods_NGNetworkingSample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7EA851335C1E84CC42D993A /* Pods_NGNetworkingSample.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B6C8CA0485B580619797189 /* Pods_NGNetworkingSample.framework in Frameworks */,
+				FB9F2CA91EA9031E008F79AE /* Pods_NGNetworkingSample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
